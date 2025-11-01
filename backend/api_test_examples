@@ -1,0 +1,483 @@
+# 🧪 Exemplos de Testes da API +Gestão
+
+## 🔧 Ferramentas Recomendadas
+
+- **Postman** (https://www.postman.com)
+- **Insomnia** (https://insomnia.rest)
+- **Thunder Client** (extensão VSCode)
+- **cURL** (linha de comando)
+
+---
+
+## 🔐 1. Autenticação
+
+### Registrar novo usuário
+
+```bash
+POST http://localhost:3001/api/auth/register
+Content-Type: application/json
+
+{
+  "nome": "João Silva",
+  "email": "joao@email.com",
+  "senha": "senha123",
+  "confirmarSenha": "senha123"
+}
+```
+
+**Resposta esperada:**
+```json
+{
+  "success": true,
+  "message": "Usuário criado com sucesso",
+  "data": {
+    "usuario": {
+      "id": "uuid...",
+      "nome": "João Silva",
+      "email": "joao@email.com",
+      "dataCadastro": "2025-10-12T..."
+    },
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  }
+}
+```
+
+### Fazer login
+
+```bash
+POST http://localhost:3001/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "joao@email.com",
+  "senha": "senha123"
+}
+```
+
+### Obter perfil (requer autenticação)
+
+```bash
+GET http://localhost:3001/api/auth/profile
+Authorization: Bearer SEU_TOKEN_AQUI
+```
+
+---
+
+## 💰 2. Contas
+
+### Listar contas
+
+```bash
+GET http://localhost:3001/api/accounts
+Authorization: Bearer SEU_TOKEN_AQUI
+```
+
+### Criar conta
+
+```bash
+POST http://localhost:3001/api/accounts
+Authorization: Bearer SEU_TOKEN_AQUI
+Content-Type: application/json
+
+{
+  "nome": "Nubank",
+  "tipo": "conta_corrente",
+  "saldoInicial": 1000.00,
+  "cor": "#8B10AE",
+  "icone": "credit-card"
+}
+```
+
+### Atualizar conta
+
+```bash
+PUT http://localhost:3001/api/accounts/ID_DA_CONTA
+Authorization: Bearer SEU_TOKEN_AQUI
+Content-Type: application/json
+
+{
+  "nome": "Nubank - Conta Principal",
+  "cor": "#820AD1"
+}
+```
+
+### Obter resumo de contas
+
+```bash
+GET http://localhost:3001/api/accounts/summary
+Authorization: Bearer SEU_TOKEN_AQUI
+```
+
+### Deletar conta
+
+```bash
+DELETE http://localhost:3001/api/accounts/ID_DA_CONTA
+Authorization: Bearer SEU_TOKEN_AQUI
+```
+
+---
+
+## 🏷️ 3. Categorias
+
+### Listar categorias
+
+```bash
+# Todas as categorias
+GET http://localhost:3001/api/categories
+Authorization: Bearer SEU_TOKEN_AQUI
+
+# Apenas despesas
+GET http://localhost:3001/api/categories?tipo=despesa
+Authorization: Bearer SEU_TOKEN_AQUI
+
+# Apenas receitas
+GET http://localhost:3001/api/categories?tipo=receita
+Authorization: Bearer SEU_TOKEN_AQUI
+```
+
+### Criar categoria personalizada
+
+```bash
+POST http://localhost:3001/api/categories
+Authorization: Bearer SEU_TOKEN_AQUI
+Content-Type: application/json
+
+{
+  "nome": "Pets",
+  "tipo": "despesa",
+  "cor": "#f59e0b",
+  "icone": "paw"
+}
+```
+
+### Atualizar categoria
+
+```bash
+PUT http://localhost:3001/api/categories/ID_DA_CATEGORIA
+Authorization: Bearer SEU_TOKEN_AQUI
+Content-Type: application/json
+
+{
+  "nome": "Animais de Estimação",
+  "cor": "#f97316"
+}
+```
+
+### Deletar categoria
+
+```bash
+DELETE http://localhost:3001/api/categories/ID_DA_CATEGORIA
+Authorization: Bearer SEU_TOKEN_AQUI
+```
+
+---
+
+## 💸 4. Transações
+
+### Listar transações
+
+```bash
+# Todas as transações
+GET http://localhost:3001/api/transactions
+Authorization: Bearer SEU_TOKEN_AQUI
+
+# Com filtros
+GET http://localhost:3001/api/transactions?tipo=despesa&limit=20&page=1
+Authorization: Bearer SEU_TOKEN_AQUI
+
+# Por período
+GET http://localhost:3001/api/transactions?dataInicio=2025-10-01&dataFim=2025-10-31
+Authorization: Bearer SEU_TOKEN_AQUI
+
+# Por conta
+GET http://localhost:3001/api/transactions?accountId=ID_DA_CONTA
+Authorization: Bearer SEU_TOKEN_AQUI
+```
+
+### Criar transação de despesa
+
+```bash
+POST http://localhost:3001/api/transactions
+Authorization: Bearer SEU_TOKEN_AQUI
+Content-Type: application/json
+
+{
+  "tipo": "despesa",
+  "valor": 45.90,
+  "descricao": "Almoço no restaurante",
+  "data": "2025-10-12T12:30:00.000Z",
+  "categoriaId": "ID_DA_CATEGORIA_ALIMENTACAO",
+  "accountId": "ID_DA_CONTA",
+  "status": "concluida"
+}
+```
+
+### Criar transação de receita
+
+```bash
+POST http://localhost:3001/api/transactions
+Authorization: Bearer SEU_TOKEN_AQUI
+Content-Type: application/json
+
+{
+  "tipo": "receita",
+  "valor": 3500.00,
+  "descricao": "Salário",
+  "data": "2025-10-05T00:00:00.000Z",
+  "categoriaId": "ID_DA_CATEGORIA_SALARIO",
+  "accountId": "ID_DA_CONTA",
+  "status": "concluida"
+}
+```
+
+### Criar transação parcelada
+
+```bash
+POST http://localhost:3001/api/transactions
+Authorization: Bearer SEU_TOKEN_AQUI
+Content-Type: application/json
+
+{
+  "tipo": "despesa",
+  "valor": 120.00,
+  "descricao": "Compra parcelada - Parcela 1/12",
+  "data": "2025-10-12T00:00:00.000Z",
+  "categoriaId": "ID_DA_CATEGORIA_COMPRAS",
+  "accountId": "ID_DA_CONTA",
+  "parcelado": true,
+  "parcelas": 12,
+  "parcelaAtual": 1
+}
+```
+
+### Criar transação recorrente
+
+```bash
+POST http://localhost:3001/api/transactions
+Authorization: Bearer SEU_TOKEN_AQUI
+Content-Type: application/json
+
+{
+  "tipo": "despesa",
+  "valor": 89.90,
+  "descricao": "Netflix",
+  "data": "2025-10-12T00:00:00.000Z",
+  "categoriaId": "ID_DA_CATEGORIA_LAZER",
+  "accountId": "ID_DA_CONTA",
+  "recorrente": true,
+  "frequencia": "mensal"
+}
+```
+
+### Atualizar transação
+
+```bash
+PUT http://localhost:3001/api/transactions/ID_DA_TRANSACAO
+Authorization: Bearer SEU_TOKEN_AQUI
+Content-Type: application/json
+
+{
+  "valor": 50.00,
+  "descricao": "Almoço no restaurante - atualizado",
+  "observacoes": "Adicionado gorjeta"
+}
+```
+
+### Deletar transação
+
+```bash
+DELETE http://localhost:3001/api/transactions/ID_DA_TRANSACAO
+Authorization: Bearer SEU_TOKEN_AQUI
+```
+
+### Listar transações recorrentes
+
+```bash
+GET http://localhost:3001/api/transactions/recurring
+Authorization: Bearer SEU_TOKEN_AQUI
+```
+
+---
+
+## 📊 5. Dashboard / Relatórios
+
+### Resumo geral do mês
+
+```bash
+GET http://localhost:3001/api/dashboard/summary
+Authorization: Bearer SEU_TOKEN_AQUI
+```
+
+**Resposta:**
+```json
+{
+  "success": true,
+  "data": {
+    "mesAtual": {
+      "receitas": "5000.00",
+      "despesas": "2500.00",
+      "saldo": "2500.00"
+    },
+    "mesAnterior": {
+      "receitas": "4800.00",
+      "despesas": "2300.00"
+    },
+    "variacoes": {
+      "receitas": "4.17",
+      "despesas": "8.70"
+    },
+    "saldoTotal": "10500.00",
+    "totalContas": 3
+  }
+}
+```
+
+### Gastos por categoria
+
+```bash
+# Despesas do mês
+GET http://localhost:3001/api/dashboard/by-category?tipo=despesa&periodo=mes
+Authorization: Bearer SEU_TOKEN_AQUI
+
+# Receitas do ano
+GET http://localhost:3001/api/dashboard/by-category?tipo=receita&periodo=ano
+Authorization: Bearer SEU_TOKEN_AQUI
+```
+
+### Evolução do saldo
+
+```bash
+# Últimos 6 meses (padrão)
+GET http://localhost:3001/api/dashboard/balance-history
+Authorization: Bearer SEU_TOKEN_AQUI
+
+# Últimos 12 meses
+GET http://localhost:3001/api/dashboard/balance-history?meses=12
+Authorization: Bearer SEU_TOKEN_AQUI
+```
+
+### Transações recentes
+
+```bash
+# 10 últimas (padrão)
+GET http://localhost:3001/api/dashboard/recent-transactions
+Authorization: Bearer SEU_TOKEN_AQUI
+
+# 20 últimas
+GET http://localhost:3001/api/dashboard/recent-transactions?limit=20
+Authorization: Bearer SEU_TOKEN_AQUI
+```
+
+---
+
+## 🧪 Fluxo de Teste Completo
+
+### 1. Criar usuário e fazer login
+```bash
+# 1. Registrar
+POST /api/auth/register
+
+# 2. Copiar o token da resposta
+# 3. Usar em todas as requisições seguintes
+```
+
+### 2. Criar contas
+```bash
+# Criar conta Nubank
+POST /api/accounts
+{
+  "nome": "Nubank",
+  "tipo": "conta_corrente",
+  "saldoInicial": 1000
+}
+
+# Criar carteira
+POST /api/accounts
+{
+  "nome": "Carteira",
+  "tipo": "carteira",
+  "saldoInicial": 200
+}
+```
+
+### 3. Listar categorias disponíveis
+```bash
+GET /api/categories
+# Copiar IDs das categorias que você vai usar
+```
+
+### 4. Criar algumas transações
+```bash
+# Receita
+POST /api/transactions
+{
+  "tipo": "receita",
+  "valor": 3500,
+  "descricao": "Salário",
+  "data": "2025-10-05T00:00:00.000Z",
+  "categoriaId": "ID_CATEGORIA_SALARIO",
+  "accountId": "ID_CONTA_NUBANK"
+}
+
+# Despesas
+POST /api/transactions
+{
+  "tipo": "despesa",
+  "valor": 150.50,
+  "descricao": "Supermercado",
+  "data": "2025-10-10T00:00:00.000Z",
+  "categoriaId": "ID_CATEGORIA_ALIMENTACAO",
+  "accountId": "ID_CONTA_NUBANK"
+}
+```
+
+### 5. Ver o dashboard
+```bash
+# Resumo
+GET /api/dashboard/summary
+
+# Por categoria
+GET /api/dashboard/by-category?tipo=despesa
+
+# Transações recentes
+GET /api/dashboard/recent-transactions
+```
+
+---
+
+## 📝 Dicas
+
+1. **Salve o token**: Após login, guarde o token em uma variável de ambiente no Postman/Insomnia
+2. **Status Code**: Sempre verifique o código de resposta HTTP
+   - 200: Sucesso
+   - 201: Criado com sucesso
+   - 400: Erro de validação
+   - 401: Não autenticado
+   - 404: Não encontrado
+   - 409: Conflito (duplicado)
+   - 500: Erro do servidor
+
+3. **Formato de data**: Use ISO 8601: `2025-10-12T12:30:00.000Z`
+4. **Valores decimais**: Use ponto como separador: `1500.50`
+
+---
+
+## 🐛 Troubleshooting
+
+### Erro 401 - Unauthorized
+- Verifique se o token está sendo enviado no header Authorization
+- Formato: `Authorization: Bearer SEU_TOKEN`
+- Token pode ter expirado (7 dias por padrão)
+
+### Erro 404 - Not Found
+- Verifique se o ID está correto
+- Certifique-se que o recurso pertence ao usuário autenticado
+
+### Erro 400 - Validation Error
+- Leia a mensagem de erro retornada
+- Verifique se todos os campos obrigatórios foram enviados
+- Confirme o formato dos dados (data, número, etc)
+
+---
+
+**Pronto! Agora você pode testar toda a API! 🚀**

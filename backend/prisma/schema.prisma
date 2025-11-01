@@ -1,0 +1,150 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ========================================
+// USUÁRIOS
+// ========================================
+model User {
+  id            String   @id @default(uuid())
+  nome          String
+  email         String   @unique
+  senhaHash     String
+  dataCadastro  DateTime @default(now())
+  atualizadoEm  DateTime @updatedAt
+  
+  // Relacionamentos
+  accounts      Account[]
+  transactions  Transaction[]
+  categories    Category[]
+  goals         Goal[]
+  
+  @@map("users")
+}
+
+// ========================================
+// CONTAS (Carteira, Bancos, etc)
+// ========================================
+model Account {
+  id            String   @id @default(uuid())
+  nome          String
+  tipo          String   // 'carteira', 'conta_corrente', 'poupanca', 'investimento'
+  saldoInicial  Decimal  @default(0) @db.Decimal(10, 2)
+  saldoAtual    Decimal  @default(0) @db.Decimal(10, 2)
+  cor           String?  @default("#3b82f6") // Para UI
+  icone         String?  @default("wallet") // Nome do ícone
+  ativa         Boolean  @default(true)
+  criadaEm      DateTime @default(now())
+  atualizadaEm  DateTime @updatedAt
+  
+  // Relacionamentos
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions  Transaction[]
+  
+  @@map("accounts")
+  @@index([userId])
+}
+
+// ========================================
+// CATEGORIAS
+// ========================================
+model Category {
+  id            String   @id @default(uuid())
+  nome          String
+  tipo          String   // 'receita' ou 'despesa'
+  cor           String   @default("#6b7280")
+  icone         String   @default("tag")
+  isDefault     Boolean  @default(false) // Categoria padrão do sistema
+  criadaEm      DateTime @default(now())
+  atualizadaEm  DateTime @updatedAt
+  
+  // Relacionamentos
+  userId        String?  // null = categoria padrão do sistema
+  user          User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions  Transaction[]
+  
+  @@map("categories")
+  @@index([userId])
+  @@index([tipo])
+}
+
+// ========================================
+// TRANSAÇÕES (Receitas e Despesas)
+// ========================================
+model Transaction {
+  id            String   @id @default(uuid())
+  tipo          String   // 'receita' ou 'despesa'
+  valor         Decimal  @db.Decimal(10, 2)
+  descricao     String
+  data          DateTime
+  status        String   @default("concluida") // 'pendente', 'concluida', 'cancelada'
+  
+  // Parcelamento
+  parcelado     Boolean  @default(false)
+  parcelas      Int?     // Número total de parcelas
+  parcelaAtual  Int?     // Parcela atual (ex: 1 de 12)
+  
+  // Recorrência
+  recorrente    Boolean  @default(false)
+  frequencia    String?  // 'mensal', 'semanal', 'anual'
+  
+  // Comprovante
+  comprovante   String?  // URL do arquivo
+  
+  // Observações
+  observacoes   String?  @db.Text
+  
+  criadaEm      DateTime @default(now())
+  atualizadaEm  DateTime @updatedAt
+  
+  // Relacionamentos
+  categoriaId   String
+  categoria     Category @relation(fields: [categoriaId], references: [id])
+  
+  accountId     String
+  account       Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("transactions")
+  @@index([userId])
+  @@index([accountId])
+  @@index([categoriaId])
+  @@index([data])
+  @@index([tipo])
+}
+
+// ========================================
+// METAS DE ECONOMIA (Fase 2)
+// ========================================
+model Goal {
+  id            String   @id @default(uuid())
+  nome          String
+  descricao     String?  @db.Text
+  valorMeta     Decimal  @db.Decimal(10, 2)
+  valorAtual    Decimal  @default(0) @db.Decimal(10, 2)
+  dataInicio    DateTime @default(now())
+  dataFim       DateTime?
+  ativa         Boolean  @default(true)
+  cor           String   @default("#10b981")
+  icone         String   @default("target")
+  criadaEm      DateTime @default(now())
+  atualizadaEm  DateTime @updatedAt
+  
+  // Relacionamentos
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("goals")
+  @@index([userId])
+}
