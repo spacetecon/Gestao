@@ -3,7 +3,7 @@ import { Plus, Wallet, Edit2, Trash2, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { accountService } from '../services/api';
 import { formatCurrency } from '../utils';
-import AccountModal from '../components/modals/AccountModal';
+import AccountModal from '../components/modals/accountModal';
 import './css/contas.css';
 
 const ACCOUNT_TYPES = {
