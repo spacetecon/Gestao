@@ -29,12 +29,27 @@ const PORT = process.env.PORT || 3001;
 app.use(helmet());
 
 // CORS - Permite requisições do frontend
-const corsOptions = {
-  origin: process.env.CORS_ORIGIN?.split(',') || 'http://localhost:5173',
-  credentials: true,
-  optionsSuccessStatus: 200
-};
-app.use(cors(corsOptions));
+const allowedOrigins = [
+  'https://gestao-pvx15esry-toms-projects-81aee861.vercel.app', // domínio da Vercel
+  'http://localhost:5173' // ambiente local
+];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Permite requisições do frontend e de ferramentas sem origem (como Postman)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.warn('❌ CORS bloqueado para origem:', origin);
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true,
+    optionsSuccessStatus: 200
+  })
+);
+
 
 // Rate Limiting - Previne ataques de força bruta
 const limiter = rateLimit({
