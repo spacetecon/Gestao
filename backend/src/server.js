@@ -28,17 +28,23 @@ const PORT = process.env.PORT || 3001;
 // Helmet - Protege contra vulnerabilidades conhecidas
 app.use(helmet());
 
+// ========================================
 // CORS - Permite requisições do frontend
+// ========================================
 const allowedOrigins = [
-  'https://gestao-pvx15esry-toms-projects-81aee861.vercel.app', // domínio da Vercel
-  'http://localhost:5173' // ambiente local
+  'https://gestao-u64q.onrender.com', // backend no Render
+  'http://localhost:5173', // ambiente local
 ];
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Permite requisições do frontend e de ferramentas sem origem (como Postman)
-      if (!origin || allowedOrigins.includes(origin)) {
+      // Permite requisições locais, do backend e de qualquer domínio da Vercel
+      if (
+        !origin || // para Postman e testes locais
+        allowedOrigins.includes(origin) ||
+        /\.vercel\.app$/.test(origin) // qualquer domínio *.vercel.app
+      ) {
         callback(null, true);
       } else {
         console.warn('❌ CORS bloqueado para origem:', origin);
@@ -46,9 +52,10 @@ app.use(
       }
     },
     credentials: true,
-    optionsSuccessStatus: 200
+    optionsSuccessStatus: 200,
   })
 );
+
 
 
 // Rate Limiting - Previne ataques de força bruta
