@@ -4,7 +4,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line, XAxis, YAxis
 import { dashboardService } from '../services/api';
 import { formatCurrency, formatDate } from '../utils';
 import { toast } from 'sonner';
-import TransactionModal from '../components/Modals/TransactionModal';
+import TransactionModal from '../components/modals/TransactionModal';
 
 export default function Dashboard() {
   const [summary, setSummary] = useState(null);

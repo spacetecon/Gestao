@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Plus, Tag, Edit2, Trash2, TrendingUp, TrendingDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { categoryService } from '../services/api';
-import CategoryModal from '../components/Modals/CategoryModal';
+import CategoryModal from '../components/modals/CategoryModal';
 
 export default function Categorias() {
   const [categories, setCategories] = useState([]);

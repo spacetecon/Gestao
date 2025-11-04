@@ -3,7 +3,7 @@ import { Plus, Filter, Search, Edit2, Trash2, TrendingUp, TrendingDown, Calendar
 import { toast } from 'sonner';
 import { transactionService, accountService, categoryService } from '../services/api';
 import { formatCurrency, formatDate, formatDateForInput } from '../utils';
-import TransactionModal from '../components/Modals/TransactionModal';
+import TransactionModal from '../components/modals/TransactionModal';
 
 
 export default function Transacoes() {
