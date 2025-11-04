@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: mais-gestao-api
+    env: node
+    region: oregon
+    buildCommand: cd backend && npm install && npm run build && npm run prisma:migrate
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false
