@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { LogIn, Mail, Lock, Loader2 } from 'lucide-react';
+import { LogIn, Mail, Lock, Loader2, User } from 'lucide-react';
 import { toast } from 'sonner';
 import useAuthStore from '../store/authStore';
 
@@ -16,6 +16,7 @@ export default function Login() {
   const navigate = useNavigate();
   const login = useAuthStore((state) => state.login);
   const [isLoading, setIsLoading] = useState(false);
+  const [isDemoLoading, setIsDemoLoading] = useState(false);
 
   const {
     register,
@@ -35,6 +36,23 @@ export default function Login() {
       navigate('/dashboard');
     } else {
       toast.error(result.error || 'Erro ao fazer login');
+    }
+  };
+
+  // 🔹 Login automático com conta pública
+  const handlePublicLogin = async () => {
+    setIsDemoLoading(true);
+    const result = await login({
+      email: 'antonio.1358@hotmail.com',
+      senha: '123456',
+    });
+    setIsDemoLoading(false);
+
+    if (result.success) {
+      toast.success('Entrou como conta pública!');
+      navigate('/dashboard');
+    } else {
+      toast.error('Erro ao acessar conta pública');
     }
   };
 
@@ -105,7 +123,7 @@ export default function Login() {
               )}
             </div>
 
-            {/* Botão Submit */}
+            {/* Botão principal */}
             <button
               type="submit"
               disabled={isLoading}
@@ -120,6 +138,26 @@ export default function Login() {
                 <>
                   <LogIn className="-ml-1 mr-2 h-5 w-5" />
                   Entrar
+                </>
+              )}
+            </button>
+
+            {/* 🔹 Botão de acesso público */}
+            <button
+              type="button"
+              onClick={handlePublicLogin}
+              disabled={isDemoLoading}
+              className="w-full mt-2 flex items-center justify-center border border-primary-300 text-primary-700 bg-white hover:bg-primary-50 rounded-lg py-2.5 transition"
+            >
+              {isDemoLoading ? (
+                <>
+                  <Loader2 className="animate-spin -ml-1 mr-2 h-5 w-5" />
+                  Entrando como público...
+                </>
+              ) : (
+                <>
+                  <User className="-ml-1 mr-2 h-5 w-5" />
+                  Entrar como Conta Pública
                 </>
               )}
             </button>
