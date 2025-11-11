@@ -39,23 +39,6 @@ export default function Login() {
     }
   };
 
-  // 🔹 Login automático com conta pública
-  const handlePublicLogin = async () => {
-    setIsDemoLoading(true);
-    const result = await login({
-      email: 'antonio.1358@hotmail.com',
-      senha: '123456',
-    });
-    setIsDemoLoading(false);
-
-    if (result.success) {
-      toast.success('Entrou como conta pública!');
-      navigate('/dashboard');
-    } else {
-      toast.error('Erro ao acessar conta pública');
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-primary-50 flex items-center justify-center px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -138,26 +121,6 @@ export default function Login() {
                 <>
                   <LogIn className="-ml-1 mr-2 h-5 w-5" />
                   Entrar
-                </>
-              )}
-            </button>
-
-            {/* 🔹 Botão de acesso público */}
-            <button
-              type="button"
-              onClick={handlePublicLogin}
-              disabled={isDemoLoading}
-              className="w-full mt-2 flex items-center justify-center border border-primary-300 text-primary-700 bg-white hover:bg-primary-50 rounded-lg py-2.5 transition"
-            >
-              {isDemoLoading ? (
-                <>
-                  <Loader2 className="animate-spin -ml-1 mr-2 h-5 w-5" />
-                  Entrando como público...
-                </>
-              ) : (
-                <>
-                  <User className="-ml-1 mr-2 h-5 w-5" />
-                  Entrar como Conta Pública
                 </>
               )}
             </button>

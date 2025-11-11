@@ -3,10 +3,11 @@ import { asyncHandler, AppError } from '../middlewares/errorHandler.js';
 
 /**
  * Função auxiliar para atualizar o saldo da conta
+ * MODIFICADO: Agora aceita transaction opcional do Prisma
  */
-async function atualizarSaldoConta(accountId) {
+async function atualizarSaldoConta(accountId, tx = prisma) {
   // Buscar todas as transações concluídas da conta
-  const transacoes = await prisma.transaction.findMany({
+  const transacoes = await tx.transaction.findMany({
     where: {
       accountId,
       status: 'concluida'
@@ -18,7 +19,7 @@ async function atualizarSaldoConta(accountId) {
   });
 
   // Calcular saldo atual
-  const conta = await prisma.account.findUnique({
+  const conta = await tx.account.findUnique({
     where: { id: accountId },
     select: { saldoInicial: true }
   });
@@ -35,7 +36,7 @@ async function atualizarSaldoConta(accountId) {
   });
 
   // Atualizar saldo da conta
-  await prisma.account.update({
+  await tx.account.update({
     where: { id: accountId },
     data: { saldoAtual }
   });
@@ -140,6 +141,7 @@ export const getTransactionById = asyncHandler(async (req, res) => {
  * @route   POST /api/transactions
  * @desc    Criar nova transação
  * @access  Private
+ * ✅ MODIFICADO: Agora usa transação atômica do Prisma
  */
 export const createTransaction = asyncHandler(async (req, res) => {
   const {
@@ -171,40 +173,45 @@ export const createTransaction = asyncHandler(async (req, res) => {
     throw new AppError('Conta não encontrada', 404);
   }
 
-  // Criar transação
-  const transacao = await prisma.transaction.create({
-    data: {
-      tipo,
-      valor,
-      descricao,
-      data,
-      categoriaId,
-      accountId,
-      userId: req.userId,
-      status: status || 'concluida',
-      parcelado: parcelado || false,
-      parcelas,
-      parcelaAtual,
-      recorrente: recorrente || false,
-      frequencia,
-      comprovante,
-      observacoes
-    },
-    include: {
-      categoria: true,
-      account: true
-    }
-  });
+  // ✅ USAR TRANSAÇÃO ATÔMICA
+  const resultado = await prisma.$transaction(async (tx) => {
+    // Criar transação
+    const transacao = await tx.transaction.create({
+      data: {
+        tipo,
+        valor,
+        descricao,
+        data,
+        categoriaId,
+        accountId,
+        userId: req.userId,
+        status: status || 'concluida',
+        parcelado: parcelado || false,
+        parcelas,
+        parcelaAtual,
+        recorrente: recorrente || false,
+        frequencia,
+        comprovante,
+        observacoes
+      },
+      include: {
+        categoria: true,
+        account: true
+      }
+    });
 
-  // Atualizar saldo da conta se a transação estiver concluída
-  if (transacao.status === 'concluida') {
-    await atualizarSaldoConta(accountId);
-  }
+    // Atualizar saldo da conta se a transação estiver concluída
+    if (transacao.status === 'concluida') {
+      await atualizarSaldoConta(accountId, tx);
+    }
+
+    return transacao;
+  });
 
   res.status(201).json({
     success: true,
     message: 'Transação criada com sucesso',
-    data: transacao
+    data: resultado
   });
 });
 
@@ -212,6 +219,7 @@ export const createTransaction = asyncHandler(async (req, res) => {
  * @route   PUT /api/transactions/:id
  * @desc    Atualizar transação
  * @access  Private
+ * ✅ MODIFICADO: Agora usa transação atômica do Prisma
  */
 export const updateTransaction = asyncHandler(async (req, res) => {
   const { id } = req.params;
@@ -243,27 +251,33 @@ export const updateTransaction = asyncHandler(async (req, res) => {
     }
   }
 
-  const transacao = await prisma.transaction.update({
-    where: { id },
-    data: updateData,
-    include: {
-      categoria: true,
-      account: true
-    }
-  });
+  // ✅ USAR TRANSAÇÃO ATÔMICA
+  const resultado = await prisma.$transaction(async (tx) => {
+    // Atualizar transação
+    const transacao = await tx.transaction.update({
+      where: { id },
+      data: updateData,
+      include: {
+        categoria: true,
+        account: true
+      }
+    });
 
-  // Atualizar saldos das contas afetadas
-  await atualizarSaldoConta(transacao.accountId);
-  
-  // Se a conta mudou, atualizar a conta antiga também
-  if (updateData.accountId && updateData.accountId !== transacaoExistente.accountId) {
-    await atualizarSaldoConta(transacaoExistente.accountId);
-  }
+    // Atualizar saldo da conta atual
+    await atualizarSaldoConta(transacao.accountId, tx);
+    
+    // Se a conta mudou, atualizar saldo da conta antiga também
+    if (updateData.accountId && updateData.accountId !== transacaoExistente.accountId) {
+      await atualizarSaldoConta(transacaoExistente.accountId, tx);
+    }
+
+    return transacao;
+  });
 
   res.json({
     success: true,
     message: 'Transação atualizada com sucesso',
-    data: transacao
+    data: resultado
   });
 });
 
@@ -271,6 +285,7 @@ export const updateTransaction = asyncHandler(async (req, res) => {
  * @route   DELETE /api/transactions/:id
  * @desc    Deletar transação
  * @access  Private
+ * ✅ MODIFICADO: Agora usa transação atômica do Prisma
  */
 export const deleteTransaction = asyncHandler(async (req, res) => {
   const { id } = req.params;
@@ -287,12 +302,16 @@ export const deleteTransaction = asyncHandler(async (req, res) => {
     throw new AppError('Transação não encontrada', 404);
   }
 
-  await prisma.transaction.delete({
-    where: { id }
-  });
+  // ✅ USAR TRANSAÇÃO ATÔMICA
+  await prisma.$transaction(async (tx) => {
+    // Deletar transação
+    await tx.transaction.delete({
+      where: { id }
+    });
 
-  // Atualizar saldo da conta
-  await atualizarSaldoConta(transacao.accountId);
+    // Atualizar saldo da conta
+    await atualizarSaldoConta(transacao.accountId, tx);
+  });
 
   res.json({
     success: true,

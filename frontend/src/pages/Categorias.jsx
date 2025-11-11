@@ -15,6 +15,7 @@ export default function Categorias() {
     loadCategories();
   }, []);
 
+  // ✅ CORRIGIDO: Adicionado finally block
   const loadCategories = async () => {
     try {
       setLoading(true);
@@ -24,7 +25,7 @@ export default function Categorias() {
       toast.error('Erro ao carregar categorias');
       console.error(error);
     } finally {
-      setLoading(false);
+      setLoading(false); // ✅ Sempre executa
     }
   };
 

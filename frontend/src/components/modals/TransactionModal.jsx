@@ -7,7 +7,6 @@ import { toast } from 'sonner';
 import { transactionService, accountService, categoryService } from '../../services/api';
 import { formatDateForInput } from '../../utils';
 
-
 const transactionSchema = z.object({
   tipo: z.enum(['receita', 'despesa']),
   valor: z.string().min(1, 'Valor é obrigatório'),
@@ -58,58 +57,67 @@ export default function TransactionModal({ isOpen, onClose, transaction, onSucce
   const parcelado = watch('parcelado');
   const recorrente = watch('recorrente');
 
+  // ✅ CORRIGIDO: Race condition resolvida + finally adicionado
   useEffect(() => {
     if (isOpen) {
-      loadData();
-      if (transaction) {
-        reset({
-          tipo: transaction.tipo,
-          valor: transaction.valor.toString(),
-          descricao: transaction.descricao,
-          data: formatDateForInput(transaction.data),
-          categoriaId: transaction.categoriaId,
-          accountId: transaction.accountId,
-          status: transaction.status,
-          parcelado: transaction.parcelado || false,
-          parcelas: transaction.parcelas?.toString() || '',
-          recorrente: transaction.recorrente || false,
-          frequencia: transaction.frequencia || 'mensal',
-          observacoes: transaction.observacoes || '',
-        });
-      } else {
-        reset({
-          tipo: 'despesa',
-          valor: '',
-          descricao: '',
-          data: formatDateForInput(new Date()),
-          categoriaId: '',
-          accountId: '',
-          status: 'concluida',
-          parcelado: false,
-          parcelas: '',
-          recorrente: false,
-          frequencia: 'mensal',
-          observacoes: '',
-        });
-      }
+      const initialize = async () => {
+        try {
+          setLoading(true);
+          
+          // Carregar dados primeiro
+          const [accountsRes, categoriesRes] = await Promise.all([
+            accountService.getAll({ ativa: true }),
+            categoryService.getAll(),
+          ]);
+          
+          setAccounts(accountsRes.data.data);
+          setCategories(categoriesRes.data.data);
+          
+          // Depois configurar o formulário
+          if (transaction) {
+            reset({
+              tipo: transaction.tipo,
+              valor: transaction.valor.toString(),
+              descricao: transaction.descricao,
+              data: transaction.data 
+                ? formatDateForInput(new Date(transaction.data)) // ✅ CORRIGIDO: Garantir Date object
+                : formatDateForInput(new Date()),
+              categoriaId: transaction.categoriaId,
+              accountId: transaction.accountId,
+              status: transaction.status,
+              parcelado: transaction.parcelado || false,
+              parcelas: transaction.parcelas?.toString() || '',
+              recorrente: transaction.recorrente || false,
+              frequencia: transaction.frequencia || 'mensal',
+              observacoes: transaction.observacoes || '',
+            });
+          } else {
+            reset({
+              tipo: 'despesa',
+              valor: '',
+              descricao: '',
+              data: formatDateForInput(new Date()),
+              categoriaId: '',
+              accountId: '',
+              status: 'concluida',
+              parcelado: false,
+              parcelas: '',
+              recorrente: false,
+              frequencia: 'mensal',
+              observacoes: '',
+            });
+          }
+        } catch (error) {
+          toast.error('Erro ao carregar dados');
+          console.error(error);
+        } finally {
+          setLoading(false); // ✅ Sempre executa
+        }
+      };
+      
+      initialize();
     }
   }, [isOpen, transaction, reset]);
-
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      const [accountsRes, categoriesRes] = await Promise.all([
-        accountService.getAll({ ativa: true }),
-        categoryService.getAll(),
-      ]);
-      setAccounts(accountsRes.data.data);
-      setCategories(categoriesRes.data.data);
-    } catch (error) {
-      toast.error('Erro ao carregar dados');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const onSubmit = async (data) => {
     try {

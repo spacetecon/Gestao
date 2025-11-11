@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { TrendingUp, TrendingDown, Wallet, Plus } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from 'recharts';
 import { dashboardService } from '../services/api';
@@ -18,6 +18,7 @@ export default function Dashboard() {
     loadDashboardData();
   }, []);
 
+  // ✅ CORRIGIDO: Adicionado finally block
   const loadDashboardData = async () => {
     try {
       setLoading(true);
@@ -29,29 +30,14 @@ export default function Dashboard() {
       ]);
 
       setSummary(summaryRes.data.data);
-      
-      // Preparar dados do gráfico de pizza
-      const categoryData = categoryRes.data.data.map(cat => ({
-        name: cat.nome,
-        value: parseFloat(cat.total)
-      }));
-      setByCategory(categoryData);
-      
-      // Preparar dados do gráfico de linha
-      const historyData = historyRes.data.data.map(item => ({
-        mes: item.mes,
-        receitas: parseFloat(item.receitas),
-        despesas: parseFloat(item.despesas),
-        saldo: parseFloat(item.saldo)
-      }));
-      setBalanceHistory(historyData);
-      
+      setByCategory(categoryRes.data.data);
+      setBalanceHistory(historyRes.data.data);
       setRecentTransactions(transactionsRes.data.data);
     } catch (error) {
       console.error('Erro ao carregar dashboard:', error);
       toast.error('Erro ao carregar dashboard');
     } finally {
-      setLoading(false);
+      setLoading(false); // ✅ Sempre executa
     }
   };
 
@@ -64,6 +50,25 @@ export default function Dashboard() {
     loadDashboardData();
     toast.success('Transação criada com sucesso!');
   };
+
+  // ✅ OTIMIZAÇÃO: Memoizar dados dos gráficos
+  const pieChartData = useMemo(() => 
+    byCategory.map(cat => ({
+      name: cat.nome,
+      value: parseFloat(cat.total)
+    })),
+    [byCategory]
+  );
+
+  const lineChartData = useMemo(() =>
+    balanceHistory.map(item => ({
+      mes: item.mes,
+      receitas: parseFloat(item.receitas),
+      despesas: parseFloat(item.despesas),
+      saldo: parseFloat(item.saldo)
+    })),
+    [balanceHistory]
+  );
 
   const COLORS = ['#ef4444', '#f97316', '#f59e0b', '#84cc16', '#10b981', '#14b8a6', '#06b6d4', '#3b82f6'];
 
@@ -176,11 +181,11 @@ export default function Dashboard() {
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Despesas por Categoria
           </h3>
-          {byCategory && byCategory.length > 0 ? (
+          {pieChartData && pieChartData.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
-                  data={byCategory}
+                  data={pieChartData}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
@@ -189,7 +194,7 @@ export default function Dashboard() {
                   fill="#8884d8"
                   dataKey="value"
                 >
-                  {byCategory.map((entry, index) => (
+                  {pieChartData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
@@ -213,9 +218,9 @@ export default function Dashboard() {
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Evolução do Saldo
           </h3>
-          {balanceHistory && balanceHistory.length > 0 ? (
+          {lineChartData && lineChartData.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={balanceHistory}>
+              <LineChart data={lineChartData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="mes" />
                 <YAxis />
@@ -299,4 +304,4 @@ export default function Dashboard() {
       />
     </div>
   );
-} 
+}

@@ -1,11 +1,21 @@
+import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
-import dotenv from 'dotenv';
 
-// Importar rotas (criaremos em seguida)
+
+// ✅ CARREGAR VARIÁVEIS DE AMBIENTE PRIMEIRO
+dotenv.config();
+console.log('🔍 Variáveis carregadas:', process.env.DATABASE_URL ? 'OK' : 'NÃO ENCONTRADA') ;
+
+
+// ✅ VALIDAR VARIÁVEIS DE AMBIENTE (NOVO)
+import { validateEnv } from './config/env.js';
+const env = validateEnv();
+
+// Importar rotas
 import authRoutes from './routes/auth.routes.js';
 import accountRoutes from './routes/account.routes.js';
 import transactionRoutes from './routes/transaction.routes.js';
@@ -15,11 +25,8 @@ import dashboardRoutes from './routes/dashboard.routes.js';
 // Middlewares customizados
 import { errorHandler } from './middlewares/errorHandler.js';
 
-// Carregar variáveis de ambiente
-dotenv.config();
-
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = env.PORT || 3001;
 
 // ========================================
 // MIDDLEWARES DE SEGURANÇA
@@ -56,12 +63,10 @@ app.use(
   })
 );
 
-
-
 // Rate Limiting - Previne ataques de força bruta
 const limiter = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutos
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100, // limite de requisições
+  windowMs: env.RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000, // 15 minutos
+  max: env.RATE_LIMIT_MAX_REQUESTS || 100, // limite de requisições
   message: 'Muitas requisições deste IP, tente novamente mais tarde.',
   standardHeaders: true,
   legacyHeaders: false,
@@ -77,7 +82,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Logger de requisições (apenas em desenvolvimento)
-if (process.env.NODE_ENV === 'development') {
+if (env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
@@ -90,7 +95,8 @@ app.get('/health', (req, res) => {
   res.json({ 
     status: 'ok', 
     message: '+Gestão API está funcionando!',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    environment: env.NODE_ENV
   });
 });
 
@@ -120,7 +126,7 @@ app.use(errorHandler);
 app.listen(PORT, () => {
   console.log('🚀 ========================================');
   console.log(`🚀 +Gestão API rodando na porta ${PORT}`);
-  console.log(`🚀 Ambiente: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🚀 Ambiente: ${env.NODE_ENV}`);
   console.log(`🚀 URL: http://localhost:${PORT}`);
   console.log('🚀 ========================================');
 });

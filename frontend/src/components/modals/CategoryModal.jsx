@@ -50,21 +50,24 @@ export default function CategoryModal({ isOpen, onClose, category, onSuccess }) 
   const selectedColor = watch('cor');
   const selectedIcon = watch('icone');
 
+  // ✅ CORRIGIDO: Simplificado - não há async aqui
   useEffect(() => {
-    if (isOpen && category) {
-      reset({
-        nome: category.nome,
-        tipo: category.tipo,
-        cor: category.cor,
-        icone: category.icone,
-      });
-    } else if (isOpen && !category) {
-      reset({
-        nome: '',
-        tipo: 'despesa',
-        cor: '#ef4444',
-        icone: '💰',
-      });
+    if (isOpen) {
+      if (category) {
+        reset({
+          nome: category.nome,
+          tipo: category.tipo,
+          cor: category.cor,
+          icone: category.icone,
+        });
+      } else {
+        reset({
+          nome: '',
+          tipo: 'despesa',
+          cor: '#ef4444',
+          icone: '💰',
+        });
+      }
     }
   }, [isOpen, category, reset]);
 

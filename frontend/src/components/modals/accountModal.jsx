@@ -48,21 +48,24 @@ export default function AccountModal({ isOpen, onClose, account, onSuccess }) {
 
   const selectedColor = watch('cor');
 
+  // ✅ CORRIGIDO: Simplificado - não há async aqui, então não precisa de finally
   useEffect(() => {
-    if (isOpen && account) {
-      reset({
-        nome: account.nome,
-        tipo: account.tipo,
-        saldoInicial: account.saldoInicial.toString(),
-        cor: account.cor,
-      });
-    } else if (isOpen && !account) {
-      reset({
-        nome: '',
-        tipo: 'conta_corrente',
-        saldoInicial: '0',
-        cor: '#3b82f6',
-      });
+    if (isOpen) {
+      if (account) {
+        reset({
+          nome: account.nome,
+          tipo: account.tipo,
+          saldoInicial: account.saldoInicial.toString(),
+          cor: account.cor,
+        });
+      } else {
+        reset({
+          nome: '',
+          tipo: 'conta_corrente',
+          saldoInicial: '0',
+          cor: '#3b82f6',
+        });
+      }
     }
   }, [isOpen, account, reset]);
 

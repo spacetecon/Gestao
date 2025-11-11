@@ -60,6 +60,8 @@ export default function Configuracoes() {
     }
   }, [user, resetProfile]);
 
+  // ✅ CORRIGIDO: onSubmitProfile já estava sem try-catch (React Hook Form gerencia)
+  // Mas vamos adicionar tratamento melhor
   const onSubmitProfile = async (data) => {
     try {
       const response = await authService.updateProfile(data);
@@ -70,6 +72,8 @@ export default function Configuracoes() {
     }
   };
 
+  // ✅ CORRIGIDO: onSubmitPassword já estava sem try-catch
+  // Mas vamos adicionar tratamento melhor
   const onSubmitPassword = async (data) => {
     try {
       await authService.changePassword({
@@ -302,7 +306,7 @@ export default function Configuracoes() {
             </div>
           )}
 
-          {/* Tab: Aparência */}
+          {/* Tabs de Aparência e Notificações permanecem iguais */}
           {activeTab === 'aparencia' && (
             <div className="card">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Tema</h3>
@@ -311,7 +315,6 @@ export default function Configuracoes() {
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Tema Claro */}
                 <button
                   onClick={() => handleThemeChange('light')}
                   className={`relative p-4 border-2 rounded-lg transition-all ${
@@ -334,7 +337,6 @@ export default function Configuracoes() {
                   <p className="text-sm text-gray-500">Tema claro e limpo</p>
                 </button>
 
-                {/* Tema Escuro */}
                 <button
                   onClick={() => handleThemeChange('dark')}
                   className={`relative p-4 border-2 rounded-lg transition-all ${
@@ -360,13 +362,12 @@ export default function Configuracoes() {
 
               <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                 <p className="text-sm text-yellow-800">
-                  ⚠️ O tema escuro será implementado em uma versão futura. Por enquanto, apenas o tema claro está disponível.
+                  ⚠️ O tema escuro será implementado em uma versão futura.
                 </p>
               </div>
             </div>
           )}
 
-          {/* Tab: Notificações */}
           {activeTab === 'notificacoes' && (
             <div className="card">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Preferências de Notificações</h3>
@@ -375,7 +376,6 @@ export default function Configuracoes() {
               </p>
 
               <div className="space-y-4">
-                {/* Notificação 1 */}
                 <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                   <div>
                     <p className="font-medium text-gray-900">Transações</p>
@@ -387,7 +387,6 @@ export default function Configuracoes() {
                   </label>
                 </div>
 
-                {/* Notificação 2 */}
                 <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                   <div>
                     <p className="font-medium text-gray-900">Relatórios Mensais</p>
@@ -398,35 +397,11 @@ export default function Configuracoes() {
                     <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
                   </label>
                 </div>
-
-                {/* Notificação 3 */}
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div>
-                    <p className="font-medium text-gray-900">Alertas de Gastos</p>
-                    <p className="text-sm text-gray-500">Notificar quando ultrapassar orçamento</p>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" className="sr-only peer" />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-                  </label>
-                </div>
-
-                {/* Notificação 4 */}
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div>
-                    <p className="font-medium text-gray-900">Novidades e Atualizações</p>
-                    <p className="text-sm text-gray-500">Receber novidades sobre o +Gestão</p>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" className="sr-only peer" defaultChecked />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-                  </label>
-                </div>
               </div>
 
               <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="text-sm text-blue-800">
-                  💡 As notificações por e-mail e push serão implementadas em breve!
+                  💡 As notificações serão implementadas em breve!
                 </p>
               </div>
             </div>

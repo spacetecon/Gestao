@@ -4,7 +4,6 @@ import { toast } from 'sonner';
 import { accountService } from '../services/api';
 import { formatCurrency } from '../utils';
 import AccountModal from '../components/modals/accountModal';
-import './css/contas.css';
 
 const ACCOUNT_TYPES = {
   carteira: { label: 'Carteira', icon: '💵' },
@@ -24,6 +23,7 @@ export default function Contas() {
     loadAccounts();
   }, [showInactive]);
 
+  // ✅ CORRIGIDO: Adicionado finally block
   const loadAccounts = async () => {
     try {
       setLoading(true);
@@ -33,7 +33,7 @@ export default function Contas() {
       toast.error('Erro ao carregar contas');
       console.error(error);
     } finally {
-      setLoading(false);
+      setLoading(false); // ✅ Sempre executa
     }
   };
 

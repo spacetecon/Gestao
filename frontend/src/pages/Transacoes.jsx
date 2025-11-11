@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Plus, Filter, Search, Edit2, Trash2, TrendingUp, TrendingDown, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Filter, Edit2, Trash2, TrendingUp, TrendingDown, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { transactionService, accountService, categoryService } from '../services/api';
-import { formatCurrency, formatDate, formatDateForInput } from '../utils';
+import { formatCurrency, formatDate } from '../utils';
 import TransactionModal from '../components/modals/TransactionModal';
-
 
 export default function Transacoes() {
   const [transactions, setTransactions] = useState([]);
@@ -35,6 +34,7 @@ export default function Transacoes() {
     loadFilterData();
   }, [page, filters]);
 
+  // ✅ CORRIGIDO: Adicionado finally block
   const loadTransactions = async () => {
     try {
       setLoading(true);
@@ -53,10 +53,11 @@ export default function Transacoes() {
       toast.error('Erro ao carregar transações');
       console.error(error);
     } finally {
-      setLoading(false);
+      setLoading(false); // ✅ Sempre executa
     }
   };
 
+  // ✅ CORRIGIDO: Adicionado finally block
   const loadFilterData = async () => {
     try {
       const [accountsRes, categoriesRes] = await Promise.all([

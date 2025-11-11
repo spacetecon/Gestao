@@ -119,12 +119,22 @@ export const updateAccount = asyncHandler(async (req, res) => {
   if (icone !== undefined) updateData.icone = icone;
   if (ativa !== undefined) updateData.ativa = ativa;
 
-  // CORREÇÃO: Só atualizar saldo se o saldoInicial foi enviado E é diferente
-  if (saldoInicial !== undefined && saldoInicial !== contaExistente.saldoInicial) {
-    const diferenca = parseFloat(saldoInicial) - parseFloat(contaExistente.saldoInicial);
-    updateData.saldoInicial = parseFloat(saldoInicial);
-    updateData.saldoAtual = parseFloat(contaExistente.saldoAtual) + diferenca;
-  }
+  if (saldoInicial !== undefined && parseFloat(saldoInicial) !== parseFloat(contaExistente.saldoInicial)) {
+  // Recalcular saldo baseado em transações
+  const transacoes = await prisma.transaction.findMany({
+    where: { accountId: id, status: 'concluida' },
+    select: { tipo: true, valor: true }
+  });
+  
+  let saldoTransacoes = 0;
+  transacoes.forEach(t => {
+    const valor = parseFloat(t.valor);
+    saldoTransacoes += t.tipo === 'receita' ? valor : -valor;
+  });
+  
+  updateData.saldoInicial = parseFloat(saldoInicial);
+  updateData.saldoAtual = parseFloat(saldoInicial) + saldoTransacoes;
+}
 
   const conta = await prisma.account.update({
     where: { id },
