@@ -5,6 +5,8 @@ import {
   createAccount,
   updateAccount,
   deleteAccount,
+  restoreAccount,
+  permanentDeleteAccount,
   getAccountsSummary
 } from '../controllers/account.controller.js';
 import { authenticate } from '../middlewares/auth.middleware.js';
@@ -22,6 +24,14 @@ router.get('/', getAccounts);
 router.get('/:id', getAccountById);
 router.post('/', validate(createAccountSchema), createAccount);
 router.put('/:id', validate(updateAccountSchema), updateAccount);
+
+// ✅ Soft delete (padrão)
 router.delete('/:id', deleteAccount);
+
+// ✅ NOVO: Restaurar conta
+router.post('/:id/restore', restoreAccount);
+
+// ✅ NOVO: Deletar permanentemente (usar com cuidado)
+router.delete('/:id/permanent', permanentDeleteAccount);
 
 export default router;

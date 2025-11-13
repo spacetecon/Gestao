@@ -43,6 +43,7 @@ model Account {
   cor           String?  @default("#3b82f6") // Para UI
   icone         String?  @default("wallet") // Nome do ícone
   ativa         Boolean  @default(true)
+  deletadaEm    DateTime? // ✅ NOVO: Campo para soft delete
   criadaEm      DateTime @default(now())
   atualizadaEm  DateTime @updatedAt
   
@@ -53,6 +54,7 @@ model Account {
   
   @@map("accounts")
   @@index([userId])
+  @@index([deletadaEm]) // ✅ NOVO: Índice para queries de soft delete
 }
 
 // ========================================

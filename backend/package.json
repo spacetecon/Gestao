@@ -4,18 +4,21 @@
   "description": "Backend do sistema +Gestão - Controle Financeiro",
   "main": "src/server.js",
   "type": "module",
- "scripts": {
-  "dev": "nodemon src/server.js",
-  "start": "node src/server.js",
-  "build": "prisma generate",
-  "generate": "node --no-warnings node_modules/prisma/build/index.js generate",
-  "prisma:generate": "prisma generate",
-  "prisma:migrate": "prisma migrate deploy",
-  "prisma:studio": "prisma studio",
-  "prisma:seed": "node prisma/seed.js"
-}
-,
-  "keywords": ["finance", "saas", "gestao"],
+  "scripts": {
+    "dev": "nodemon src/server.js",
+    "start": "node src/server.js",
+    "build": "prisma generate",
+    "generate": "node --no-warnings node_modules/prisma/build/index.js generate",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate deploy",
+    "prisma:studio": "prisma studio",
+    "prisma:seed": "node prisma/seed.js"
+  },
+  "keywords": [
+    "finance",
+    "saas",
+    "gestao"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
@@ -28,8 +31,9 @@
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
-    "zod": "^3.23.8",
-    "prisma": "^5.19.0"
+    "prisma": "^5.19.0",
+    "winston": "^3.18.3",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "nodemon": "^3.1.4"
