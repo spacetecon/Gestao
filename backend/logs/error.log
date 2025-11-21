@@ -100,3 +100,21 @@ Please make sure your database server is running at `aws-1-us-east-1.pooler.supa
   "environment": "development",
   "target": "account.findMany"
 }
+undefined error: Prisma Error Error in PostgreSQL connection: Error { kind: Io, cause: Some(Os { code: 10054, kind: ConnectionReset, message: "Foi forçado o cancelamento de uma conexão existente pelo host remoto." }) }
+{
+  "service": "mais-gestao-api",
+  "environment": "development",
+  "target": "quaint::connector::postgres::native"
+}
+undefined error: Prisma Error Error in PostgreSQL connection: Error { kind: Io, cause: Some(Os { code: 10054, kind: ConnectionReset, message: "Foi forçado o cancelamento de uma conexão existente pelo host remoto." }) }
+{
+  "service": "mais-gestao-api",
+  "environment": "development",
+  "target": "quaint::connector::postgres::native"
+}
+undefined error: Prisma Error Error in PostgreSQL connection: Error { kind: Io, cause: Some(Os { code: 10054, kind: ConnectionReset, message: "Foi forçado o cancelamento de uma conexão existente pelo host remoto." }) }
+{
+  "service": "mais-gestao-api",
+  "environment": "development",
+  "target": "quaint::connector::postgres::native"
+}

@@ -12,13 +12,14 @@ export default function Dashboard() {
   const [balanceHistory, setBalanceHistory] = useState([]);
   const [recentTransactions, setRecentTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  // ✅ CORREÇÃO: Estado do modal
   const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
     loadDashboardData();
   }, []);
 
-  // ✅ CORRIGIDO: Adicionado finally block
   const loadDashboardData = async () => {
     try {
       setLoading(true);
@@ -37,21 +38,30 @@ export default function Dashboard() {
       console.error('Erro ao carregar dashboard:', error);
       toast.error('Erro ao carregar dashboard');
     } finally {
-      setLoading(false); // ✅ Sempre executa
+      setLoading(false);
     }
   };
 
+  // ✅ CORREÇÃO: Função para abrir o modal
   const handleCreateTransaction = () => {
+    console.log('🔵 Abrindo modal de transação');
     setModalOpen(true);
   };
 
+  // ✅ CORREÇÃO: Função para fechar modal e recarregar dados
   const handleTransactionSuccess = () => {
+    console.log('✅ Transação criada com sucesso');
     setModalOpen(false);
     loadDashboardData();
     toast.success('Transação criada com sucesso!');
   };
 
-  // ✅ OTIMIZAÇÃO: Memoizar dados dos gráficos
+  // ✅ CORREÇÃO: Função para fechar modal sem salvar
+  const handleCloseModal = () => {
+    console.log('❌ Modal fechado sem salvar');
+    setModalOpen(false);
+  };
+
   const pieChartData = useMemo(() => 
     byCategory.map(cat => ({
       name: cat.nome,
@@ -82,18 +92,22 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* ✅ Header com botão funcionando */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
           <p className="text-gray-600">Visão geral das suas finanças</p>
         </div>
+        
+        {/* ✅ BOTÃO CORRIGIDO */}
         <button 
           onClick={handleCreateTransaction}
           className="btn-primary flex items-center"
+          type="button"
         >
           <Plus className="h-5 w-5 mr-2" />
-          Nova Transação
+          <span className="hidden sm:inline">Nova Transação</span>
+          <span className="sm:hidden">Nova</span>
         </button>
       </div>
 
@@ -176,7 +190,7 @@ export default function Dashboard() {
 
       {/* Gráficos */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Gráfico de Pizza - Despesas por Categoria */}
+        {/* Gráfico de Pizza */}
         <div className="card">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Despesas por Categoria
@@ -205,7 +219,11 @@ export default function Dashboard() {
             <div className="h-[300px] flex items-center justify-center">
               <div className="text-center">
                 <p className="text-gray-500 mb-2">Sem despesas no período</p>
-                <button onClick={handleCreateTransaction} className="text-sm text-primary-600 hover:text-primary-700">
+                <button 
+                  onClick={handleCreateTransaction} 
+                  className="text-sm text-primary-600 hover:text-primary-700"
+                  type="button"
+                >
                   Adicionar primeira despesa
                 </button>
               </div>
@@ -213,7 +231,7 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Gráfico de Linha - Evolução do Saldo */}
+        {/* Gráfico de Linha */}
         <div className="card">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Evolução do Saldo
@@ -235,7 +253,11 @@ export default function Dashboard() {
             <div className="h-[300px] flex items-center justify-center">
               <div className="text-center">
                 <p className="text-gray-500 mb-2">Sem dados no período</p>
-                <button onClick={handleCreateTransaction} className="text-sm text-primary-600 hover:text-primary-700">
+                <button 
+                  onClick={handleCreateTransaction} 
+                  className="text-sm text-primary-600 hover:text-primary-700"
+                  type="button"
+                >
                   Adicionar primeira transação
                 </button>
               </div>
@@ -287,6 +309,7 @@ export default function Dashboard() {
             <button 
               onClick={handleCreateTransaction}
               className="btn-primary inline-flex items-center"
+              type="button"
             >
               <Plus className="h-5 w-5 mr-2" />
               Criar primeira transação
@@ -295,10 +318,10 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* Modal de Nova Transação */}
+      {/* ✅ MODAL DE TRANSAÇÃO - Corrigido */}
       <TransactionModal
         isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={handleCloseModal}
         transaction={null}
         onSuccess={handleTransactionSuccess}
       />

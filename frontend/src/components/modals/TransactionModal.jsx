@@ -23,6 +23,9 @@ const transactionSchema = z.object({
 });
 
 export default function TransactionModal({ isOpen, onClose, transaction, onSuccess }) {
+  // ✅ DEBUG
+  console.log('🔵 TransactionModal renderizado', { isOpen, transaction });
+  
   const isEditing = !!transaction;
   const [accounts, setAccounts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -57,30 +60,34 @@ export default function TransactionModal({ isOpen, onClose, transaction, onSucce
   const parcelado = watch('parcelado');
   const recorrente = watch('recorrente');
 
-  // ✅ CORRIGIDO: Race condition resolvida + finally adicionado
   useEffect(() => {
     if (isOpen) {
+      console.log('🟢 Modal aberto, carregando dados...');
+      
       const initialize = async () => {
         try {
           setLoading(true);
           
-          // Carregar dados primeiro
           const [accountsRes, categoriesRes] = await Promise.all([
             accountService.getAll({ ativa: true }),
             categoryService.getAll(),
           ]);
           
+          console.log('✅ Dados carregados:', {
+            accounts: accountsRes.data.data.length,
+            categories: categoriesRes.data.data.length
+          });
+          
           setAccounts(accountsRes.data.data);
           setCategories(categoriesRes.data.data);
           
-          // Depois configurar o formulário
           if (transaction) {
             reset({
               tipo: transaction.tipo,
               valor: transaction.valor.toString(),
               descricao: transaction.descricao,
               data: transaction.data 
-                ? formatDateForInput(new Date(transaction.data)) // ✅ CORRIGIDO: Garantir Date object
+                ? formatDateForInput(new Date(transaction.data))
                 : formatDateForInput(new Date()),
               categoriaId: transaction.categoriaId,
               accountId: transaction.accountId,
@@ -108,10 +115,10 @@ export default function TransactionModal({ isOpen, onClose, transaction, onSucce
             });
           }
         } catch (error) {
+          console.error('❌ Erro ao carregar dados:', error);
           toast.error('Erro ao carregar dados');
-          console.error(error);
         } finally {
-          setLoading(false); // ✅ Sempre executa
+          setLoading(false);
         }
       };
       
@@ -120,6 +127,8 @@ export default function TransactionModal({ isOpen, onClose, transaction, onSucce
   }, [isOpen, transaction, reset]);
 
   const onSubmit = async (data) => {
+    console.log('📤 Submetendo transação:', data);
+    
     try {
       const payload = {
         ...data,
@@ -130,6 +139,8 @@ export default function TransactionModal({ isOpen, onClose, transaction, onSucce
         frequencia: data.recorrente ? data.frequencia : null,
       };
 
+      console.log('📦 Payload:', payload);
+
       if (isEditing) {
         await transactionService.update(transaction.id, payload);
         toast.success('Transação atualizada com sucesso');
@@ -138,28 +149,51 @@ export default function TransactionModal({ isOpen, onClose, transaction, onSucce
         toast.success('Transação criada com sucesso');
       }
 
+      console.log('✅ Transação salva, chamando onSuccess');
       onSuccess();
     } catch (error) {
+      console.error('❌ Erro ao salvar:', error);
       toast.error(error.response?.data?.message || 'Erro ao salvar transação');
     }
   };
 
-  if (!isOpen) return null;
+  // ✅ Se não estiver aberto, não renderizar nada
+  if (!isOpen) {
+    console.log('⚪ Modal fechado, não renderizando');
+    return null;
+  }
+
+  console.log('🟡 Renderizando modal aberto');
 
   const filteredCategories = categories.filter(cat => cat.tipo === tipo);
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex min-h-screen items-center justify-center p-4">
-        <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={onClose} />
+        {/* Backdrop */}
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" 
+          onClick={() => {
+            console.log('🔴 Backdrop clicado, fechando modal');
+            onClose();
+          }}
+        />
 
+        {/* Modal */}
         <div className="relative bg-white rounded-xl shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-gray-900">
               {isEditing ? 'Editar Transação' : 'Nova Transação'}
             </h2>
-            <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
+            <button 
+              onClick={() => {
+                console.log('🔴 X clicado, fechando modal');
+                onClose();
+              }}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+              type="button"
+            >
               <X className="h-6 w-6" />
             </button>
           </div>
@@ -176,7 +210,10 @@ export default function TransactionModal({ isOpen, onClose, transaction, onSucce
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
-                    onClick={() => setValue('tipo', 'receita')}
+                    onClick={() => {
+                      console.log('✅ Selecionado: receita');
+                      setValue('tipo', 'receita');
+                    }}
                     className={`p-4 rounded-lg border-2 transition-all ${
                       tipo === 'receita'
                         ? 'border-green-500 bg-green-50'
@@ -190,7 +227,10 @@ export default function TransactionModal({ isOpen, onClose, transaction, onSucce
                   </button>
                   <button
                     type="button"
-                    onClick={() => setValue('tipo', 'despesa')}
+                    onClick={() => {
+                      console.log('✅ Selecionado: despesa');
+                      setValue('tipo', 'despesa');
+                    }}
                     className={`p-4 rounded-lg border-2 transition-all ${
                       tipo === 'despesa'
                         ? 'border-red-500 bg-red-50'
@@ -283,7 +323,6 @@ export default function TransactionModal({ isOpen, onClose, transaction, onSucce
 
               {/* Opções Avançadas */}
               <div className="border-t pt-4 space-y-3">
-                {/* Parcelado */}
                 <div className="flex items-center space-x-2">
                   <input {...register('parcelado')} type="checkbox" id="parcelado" className="rounded" />
                   <label htmlFor="parcelado" className="text-sm font-medium text-gray-700">
@@ -306,7 +345,6 @@ export default function TransactionModal({ isOpen, onClose, transaction, onSucce
                   </div>
                 )}
 
-                {/* Recorrente */}
                 <div className="flex items-center space-x-2">
                   <input {...register('recorrente')} type="checkbox" id="recorrente" className="rounded" />
                   <label htmlFor="recorrente" className="text-sm font-medium text-gray-700">
@@ -340,7 +378,15 @@ export default function TransactionModal({ isOpen, onClose, transaction, onSucce
 
               {/* Buttons */}
               <div className="flex space-x-3 pt-4">
-                <button type="button" onClick={onClose} className="flex-1 btn-secondary" disabled={isSubmitting}>
+                <button 
+                  type="button" 
+                  onClick={() => {
+                    console.log('🔴 Cancelar clicado');
+                    onClose();
+                  }}
+                  className="flex-1 btn-secondary" 
+                  disabled={isSubmitting}
+                >
                   Cancelar
                 </button>
                 <button
