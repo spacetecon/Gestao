@@ -13,7 +13,6 @@ import {
 import useAuthStore from '../../store/authStore';
 import { getInitials } from '../../utils';
 
-console.log('🟢 LAYOUT NOVO CARREGADO!');
 
 const menuItems = [
   { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
